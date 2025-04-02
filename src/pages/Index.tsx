@@ -9,12 +9,23 @@ import LoginDialog from "@/components/LoginDialog";
 import AddLocationDialog from "@/components/AddLocationDialog";
 import { useApp } from "@/context/AppContext";
 
+interface IndexProps {
+  initialView?: "map" | "list";
+}
+
 // Move this component inside the AppProvider
-const IndexContent: React.FC = () => {
+const IndexContent: React.FC<IndexProps> = ({ initialView }) => {
   const [loginDialogOpen, setLoginDialogOpen] = useState(false);
   const [locationDetailOpen, setLocationDetailOpen] = useState(false);
   const [addLocationOpen, setAddLocationOpen] = useState(false);
-  const { currentView, selectedLocation } = useApp();
+  const { currentView, selectedLocation, setCurrentView } = useApp();
+
+  // Set initial view when provided
+  useEffect(() => {
+    if (initialView) {
+      setCurrentView(initialView);
+    }
+  }, [initialView, setCurrentView]);
 
   // When a location is selected, open the detail dialog
   useEffect(() => {
@@ -56,10 +67,10 @@ const IndexContent: React.FC = () => {
 };
 
 // This is the component that gets exported and rendered
-const Index: React.FC = () => {
+const Index: React.FC<IndexProps> = ({ initialView }) => {
   return (
     <AppProvider>
-      <IndexContent />
+      <IndexContent initialView={initialView} />
     </AppProvider>
   );
 };
