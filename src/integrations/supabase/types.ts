@@ -9,7 +9,107 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
-      [_ in never]: never
+      locations: {
+        Row: {
+          address: string
+          average_noise_level: number | null
+          created_at: string | null
+          created_by: string | null
+          description: string | null
+          id: string
+          image_url: string | null
+          latitude: number
+          longitude: number
+          name: string
+          total_reports: number | null
+          type: string
+        }
+        Insert: {
+          address: string
+          average_noise_level?: number | null
+          created_at?: string | null
+          created_by?: string | null
+          description?: string | null
+          id?: string
+          image_url?: string | null
+          latitude: number
+          longitude: number
+          name: string
+          total_reports?: number | null
+          type: string
+        }
+        Update: {
+          address?: string
+          average_noise_level?: number | null
+          created_at?: string | null
+          created_by?: string | null
+          description?: string | null
+          id?: string
+          image_url?: string | null
+          latitude?: number
+          longitude?: number
+          name?: string
+          total_reports?: number | null
+          type?: string
+        }
+        Relationships: []
+      }
+      noise_reports: {
+        Row: {
+          comment: string | null
+          id: string
+          location_id: string
+          noise_level: number
+          timestamp: string | null
+          user_id: string
+        }
+        Insert: {
+          comment?: string | null
+          id?: string
+          location_id: string
+          noise_level: number
+          timestamp?: string | null
+          user_id: string
+        }
+        Update: {
+          comment?: string | null
+          id?: string
+          location_id?: string
+          noise_level?: number
+          timestamp?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "noise_reports_location_id_fkey"
+            columns: ["location_id"]
+            isOneToOne: false
+            referencedRelation: "locations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      profiles: {
+        Row: {
+          created_at: string | null
+          id: string
+          reports: number | null
+          username: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          id: string
+          reports?: number | null
+          username?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          reports?: number | null
+          username?: string | null
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
