@@ -1,13 +1,62 @@
-// Update this page (the content is just a fallback if you fail to update the page)
 
-const Index = () => {
+import React, { useState } from "react";
+import { AppProvider } from "@/context/AppContext";
+import Layout from "@/components/Layout";
+import MapView from "@/components/MapView";
+import LocationList from "@/components/LocationList";
+import LocationDetail from "@/components/LocationDetail";
+import LoginDialog from "@/components/LoginDialog";
+import AddLocationDialog from "@/components/AddLocationDialog";
+import { useApp } from "@/context/AppContext";
+
+const IndexContent: React.FC = () => {
+  const [loginDialogOpen, setLoginDialogOpen] = useState(false);
+  const [locationDetailOpen, setLocationDetailOpen] = useState(false);
+  const [addLocationOpen, setAddLocationOpen] = useState(false);
+  const { currentView, selectedLocation } = useApp();
+
+  // When a location is selected, open the detail dialog
+  React.useEffect(() => {
+    if (selectedLocation) {
+      setLocationDetailOpen(true);
+    }
+  }, [selectedLocation]);
+
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-100">
-      <div className="text-center">
-        <h1 className="text-4xl font-bold mb-4">Welcome to Your Blank App</h1>
-        <p className="text-xl text-gray-600">Start building your amazing project here!</p>
-      </div>
-    </div>
+    <>
+      <Layout 
+        handleOpenLogin={() => setLoginDialogOpen(true)} 
+        handleOpenAddLocation={() => setAddLocationOpen(true)}
+      >
+        <div className="h-full">
+          {currentView === "map" ? <MapView /> : <LocationList />}
+        </div>
+      </Layout>
+
+      {/* Dialogs */}
+      <LoginDialog 
+        open={loginDialogOpen} 
+        onOpenChange={setLoginDialogOpen} 
+      />
+      
+      <LocationDetail 
+        open={locationDetailOpen} 
+        onOpenChange={setLocationDetailOpen} 
+      />
+      
+      <AddLocationDialog
+        open={addLocationOpen}
+        onOpenChange={setAddLocationOpen}
+      />
+    </>
+  );
+};
+
+const Index: React.FC = () => {
+  return (
+    <AppProvider>
+      <IndexContent />
+    </AppProvider>
   );
 };
 
