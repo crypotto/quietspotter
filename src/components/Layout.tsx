@@ -1,13 +1,14 @@
 
 import React from "react";
-import { Map, Volume2, VolumeX, Menu } from "lucide-react";
+import { Map, Volume2, VolumeX, Menu, LogOut, Plus, User } from "lucide-react";
 import { useApp } from "@/context/AppContext";
 import { Button } from "@/components/ui/button";
 import { 
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
-  DropdownMenuTrigger
+  DropdownMenuTrigger,
+  DropdownMenuSeparator
 } from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { useToast } from "@/components/ui/use-toast";
@@ -23,7 +24,7 @@ const Layout: React.FC<LayoutProps> = ({
   handleOpenLogin,
   handleOpenAddLocation
 }) => {
-  const { currentUser, currentView, setCurrentView } = useApp();
+  const { currentUser, currentView, setCurrentView, logout } = useApp();
   const { toast } = useToast();
 
   const handleAddLocation = () => {
@@ -84,11 +85,22 @@ const Layout: React.FC<LayoutProps> = ({
                     <div className="px-2 py-1.5 text-sm font-medium">
                       {currentUser.username}
                     </div>
+                    
                     <DropdownMenuItem onClick={handleAddLocation}>
+                      <Plus className="h-4 w-4 mr-2" />
                       Add Location
                     </DropdownMenuItem>
+                    
                     <DropdownMenuItem onClick={() => toast({ title: "Reports", description: `You've submitted ${currentUser.reports} reports` })}>
+                      <User className="h-4 w-4 mr-2" />
                       My Reports ({currentUser.reports})
+                    </DropdownMenuItem>
+                    
+                    <DropdownMenuSeparator />
+                    
+                    <DropdownMenuItem onClick={logout} className="text-red-500 focus:text-red-500">
+                      <LogOut className="h-4 w-4 mr-2" />
+                      Log Out
                     </DropdownMenuItem>
                   </DropdownMenuContent>
                 </DropdownMenu>

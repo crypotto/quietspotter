@@ -1,4 +1,3 @@
-
 import React, { createContext, useContext, useState, ReactNode } from "react";
 import { Location, NoiseReport, User } from "../types";
 import { mockLocations, mockReports, mockUsers } from "../data/mockData";
@@ -17,6 +16,8 @@ interface AppContextType {
   currentView: "map" | "list";
   setCurrentView: (view: "map" | "list") => void;
   login: (username: string) => void;
+  addLocation: (locationData: Omit<Location, "id" | "averageNoiseLevel" | "totalReports" | "imageUrl">) => void;
+  logout: () => void;
 }
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
@@ -58,10 +59,8 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
       ...reportData,
     };
 
-    // Add the report
     setReports((prev) => [...prev, newReport]);
 
-    // Update the location's average noise level
     setLocations((prev) =>
       prev.map((loc) => {
         if (loc.id === reportData.locationId) {
@@ -82,7 +81,6 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
       })
     );
 
-    // Update the user's report count
     setUsers((prev) =>
       prev.map((user) => {
         if (user.id === currentUser.id) {
@@ -95,7 +93,6 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
       })
     );
 
-    // Update current user
     setCurrentUser((prev) => {
       if (prev) {
         return {
@@ -113,7 +110,6 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
   };
 
   const login = (username: string) => {
-    // Find if user exists
     const existingUser = users.find((u) => u.username.toLowerCase() === username.toLowerCase());
     
     if (existingUser) {
@@ -123,7 +119,6 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
         description: `Logged in as ${existingUser.username}`,
       });
     } else {
-      // Create new user
       const newUser: User = {
         id: `user-${Date.now()}`,
         username,
@@ -141,6 +136,42 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     }
   };
 
+  const logout = () => {
+    setCurrentUser(null);
+    toast({
+      title: "Logged out",
+      description: "You have been logged out successfully",
+    });
+  };
+
+  const addLocation = (locationData: Omit<Location, "id" | "averageNoiseLevel" | "totalReports" | "imageUrl">) => {
+    if (!currentUser) {
+      toast({
+        title: "You need to log in",
+        description: "Please log in to add a location",
+        variant: "destructive",
+      });
+      return;
+    }
+    
+    const newLocation: Location = {
+      id: `location-${Date.now()}`,
+      averageNoiseLevel: 0,
+      totalReports: 0,
+      imageUrl: undefined,
+      ...locationData,
+    };
+    
+    setLocations((prev) => [...prev, newLocation]);
+    
+    toast({
+      title: "Location added",
+      description: `${newLocation.name} has been added successfully!`,
+    });
+    
+    setSelectedLocation(newLocation);
+  };
+
   const value = {
     locations,
     reports,
@@ -154,6 +185,8 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     currentView,
     setCurrentView,
     login,
+    addLocation,
+    logout,
   };
 
   return <AppContext.Provider value={value}>{children}</AppContext.Provider>;

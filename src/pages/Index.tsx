@@ -1,5 +1,5 @@
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { AppProvider } from "@/context/AppContext";
 import Layout from "@/components/Layout";
 import MapView from "@/components/MapView";
@@ -13,12 +13,14 @@ const IndexContent: React.FC = () => {
   const [loginDialogOpen, setLoginDialogOpen] = useState(false);
   const [locationDetailOpen, setLocationDetailOpen] = useState(false);
   const [addLocationOpen, setAddLocationOpen] = useState(false);
-  const { currentView, selectedLocation } = useApp();
+  const { currentView, selectedLocation, currentUser } = useApp();
 
   // When a location is selected, open the detail dialog
-  React.useEffect(() => {
+  useEffect(() => {
     if (selectedLocation) {
       setLocationDetailOpen(true);
+    } else {
+      setLocationDetailOpen(false);
     }
   }, [selectedLocation]);
 

@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { useToast } from "@/components/ui/use-toast";
+import { useApp } from "@/context/AppContext";
 
 interface AddLocationDialogProps {
   open: boolean;
@@ -16,21 +17,43 @@ const AddLocationDialog: React.FC<AddLocationDialogProps> = ({ open, onOpenChang
   const [name, setName] = useState("");
   const [address, setAddress] = useState("");
   const [type, setType] = useState<"cafe" | "coworking">("cafe");
+  const [lat, setLat] = useState<number | string>("");
+  const [lng, setLng] = useState<number | string>("");
   
   const { toast } = useToast();
+  const { addLocation } = useApp();
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     
-    // In a real app, we would send this data to the backend
-    toast({
-      title: "Feature coming soon",
-      description: "Adding new locations will be available in the next update!",
+    // Validate coordinates
+    const latNum = Number(lat);
+    const lngNum = Number(lng);
+    
+    if (isNaN(latNum) || isNaN(lngNum)) {
+      toast({
+        title: "Invalid coordinates",
+        description: "Please enter valid latitude and longitude values.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    // Add the new location
+    addLocation({
+      name: name.trim(),
+      address: address.trim(),
+      lat: latNum,
+      lng: lngNum,
+      type: type,
     });
     
+    // Reset the form
     setName("");
     setAddress("");
     setType("cafe");
+    setLat("");
+    setLng("");
     onOpenChange(false);
   };
 
@@ -66,6 +89,33 @@ const AddLocationDialog: React.FC<AddLocationDialogProps> = ({ open, onOpenChang
             />
           </div>
           
+          <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label htmlFor="latitude">Latitude</Label>
+              <Input
+                id="latitude"
+                type="number"
+                step="any"
+                placeholder="e.g. 51.5074"
+                value={lat}
+                onChange={(e) => setLat(e.target.value)}
+                required
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="longitude">Longitude</Label>
+              <Input
+                id="longitude"
+                type="number"
+                step="any"
+                placeholder="e.g. -0.1278"
+                value={lng}
+                onChange={(e) => setLng(e.target.value)}
+                required
+              />
+            </div>
+          </div>
+          
           <div className="space-y-2">
             <Label>Type</Label>
             <RadioGroup 
@@ -84,13 +134,9 @@ const AddLocationDialog: React.FC<AddLocationDialogProps> = ({ open, onOpenChang
             </RadioGroup>
           </div>
           
-          <Button type="submit" className="w-full" disabled={!name.trim() || !address.trim()}>
+          <Button type="submit" className="w-full" disabled={!name.trim() || !address.trim() || !lat || !lng}>
             Add Location
           </Button>
-          
-          <p className="text-xs text-muted-foreground text-center">
-            Note: In this demo, new locations won't be saved.
-          </p>
         </form>
       </DialogContent>
     </Dialog>
