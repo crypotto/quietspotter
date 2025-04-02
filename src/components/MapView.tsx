@@ -1,4 +1,3 @@
-
 import React, { useState, useRef } from "react";
 import { useApp } from "@/context/AppContext";
 import { Location, getNoiseLevelFromNumber } from "@/types";
@@ -21,9 +20,8 @@ const defaultCenter = {
   lng: -74.0060, // Default to New York City
 };
 
-// Use a valid Google Maps API key or use process.env variable
-// For the demo, we'll use a placeholder - you should replace this with a valid key
-const GOOGLE_MAPS_API_KEY = "YOUR_GOOGLE_MAPS_API_KEY";
+// Use the provided Google Maps API key
+const GOOGLE_MAPS_API_KEY = "AIzaSyAeBLYF8zcuSCppMrju5_PBHclDxEOfvFk";
 
 const MapView: React.FC = () => {
   const { locations, setSelectedLocation, filterNoiseLevel, setFilterNoiseLevel } = useApp();
@@ -36,7 +34,7 @@ const MapView: React.FC = () => {
     ? locations.filter(loc => loc.averageNoiseLevel <= filterNoiseLevel)
     : locations;
   
-  // Load Google Maps API with API key
+  // Load Google Maps API with the provided key
   const { isLoaded, loadError } = useLoadScript({
     googleMapsApiKey: GOOGLE_MAPS_API_KEY,
     libraries: libraries as any,

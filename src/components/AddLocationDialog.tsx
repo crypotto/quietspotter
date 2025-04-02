@@ -1,4 +1,3 @@
-
 import React, { useState, useRef, useEffect } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
@@ -13,9 +12,8 @@ import { Loader2 } from "lucide-react";
 // Define libraries outside of the component to avoid reloading
 const libraries = ["places"];
 
-// Use a valid Google Maps API key or use process.env variable
-// For the demo, we'll use a placeholder - you should replace this with a valid key
-const GOOGLE_MAPS_API_KEY = "YOUR_GOOGLE_MAPS_API_KEY";
+// Use the provided Google Maps API key
+const GOOGLE_MAPS_API_KEY = "AIzaSyAeBLYF8zcuSCppMrju5_PBHclDxEOfvFk";
 
 interface AddLocationDialogProps {
   open: boolean;
@@ -35,7 +33,7 @@ const AddLocationDialog: React.FC<AddLocationDialogProps> = ({ open, onOpenChang
   const { toast } = useToast();
   const { addLocation } = useApp();
 
-  // Load Google Maps Places API with the same key
+  // Load Google Maps Places API with the provided key
   const { isLoaded, loadError } = useLoadScript({
     googleMapsApiKey: GOOGLE_MAPS_API_KEY,
     libraries: libraries as any,
