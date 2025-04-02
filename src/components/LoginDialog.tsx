@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
@@ -13,6 +12,7 @@ import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { toast } from "@/components/ui/use-toast";
 import { supabase } from "@/integrations/supabase/client";
+import { Database } from "@/integrations/supabase/types";
 
 interface LoginDialogProps {
   open: boolean;
@@ -71,7 +71,7 @@ const LoginDialog: React.FC<LoginDialogProps> = ({ open, onOpenChange }) => {
       if (data.user) {
         // Get user profile from profiles table
         const { data: profileData, error: profileError } = await supabase
-          .from("profiles")
+          .from('profiles')
           .select("*")
           .eq("id", data.user.id)
           .single();
@@ -85,20 +85,22 @@ const LoginDialog: React.FC<LoginDialogProps> = ({ open, onOpenChange }) => {
           return;
         }
 
-        // Login using our AppContext
-        login({
-          id: data.user.id,
-          username: profileData.username,
-          reports: profileData.reports,
-          createdAt: profileData.created_at
-        });
+        if (profileData) {
+          // Login using our AppContext
+          login({
+            id: data.user.id,
+            username: profileData.username || "User",
+            reports: profileData.reports || 0,
+            createdAt: profileData.created_at || new Date().toISOString()
+          });
 
-        toast({
-          title: "Login successful",
-          description: `Welcome back, ${profileData.username}!`,
-        });
-        
-        onOpenChange(false);
+          toast({
+            title: "Login successful",
+            description: `Welcome back, ${profileData.username || "User"}!`,
+          });
+          
+          onOpenChange(false);
+        }
       }
     } catch (error) {
       toast({
@@ -118,7 +120,7 @@ const LoginDialog: React.FC<LoginDialogProps> = ({ open, onOpenChange }) => {
 
       // Check if username is already taken
       const { data: existingUser, error: userCheckError } = await supabase
-        .from("profiles")
+        .from('profiles')
         .select("username")
         .eq("username", values.username)
         .maybeSingle();
