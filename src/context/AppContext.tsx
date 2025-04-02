@@ -1,4 +1,3 @@
-
 import React, { createContext, useContext, useState, ReactNode, useEffect } from "react";
 import { Location, NoiseReport, User } from "../types";
 import { useToast } from "@/components/ui/use-toast";
@@ -46,7 +45,6 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
   
   const { toast } = useToast();
 
-  // Fetch locations from Supabase
   const fetchLocations = async () => {
     try {
       const { data, error } = await supabase
@@ -78,10 +76,8 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     }
   };
 
-  // Fetch noise reports from Supabase - FIXED
   const fetchReports = async () => {
     try {
-      // Change the query to fetch profiles separately
       const { data, error } = await supabase
         .from('noise_reports')
         .select("*");
@@ -92,10 +88,8 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
       }
 
       if (data) {
-        // For each report, fetch the associated username
         const formattedReports: NoiseReport[] = await Promise.all(
           data.map(async (report) => {
-            // Get username from profiles table
             const { data: profileData } = await supabase
               .from('profiles')
               .select('username')
@@ -121,16 +115,13 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     }
   };
 
-  // Initialize Supabase auth state
   useEffect(() => {
     const initApp = async () => {
       setIsInitializing(true);
       
-      // Set up auth state listener
       const { data: { subscription } } = supabase.auth.onAuthStateChange(
         async (event, session) => {
           if (event === 'SIGNED_IN' && session?.user) {
-            // Fetch user profile from profiles table
             const { data: profileData, error: profileError } = await supabase
               .from('profiles')
               .select("*")
@@ -151,10 +142,8 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
         }
       );
 
-      // Check for existing session
       const { data: { session } } = await supabase.auth.getSession();
       if (session?.user) {
-        // Fetch user profile from profiles table
         const { data: profileData, error: profileError } = await supabase
           .from('profiles')
           .select("*")
@@ -171,7 +160,6 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
         }
       }
 
-      // Fetch initial data
       await fetchLocations();
       await fetchReports();
       
@@ -194,7 +182,6 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     }
 
     try {
-      // Insert report to Supabase
       const { data: newReport, error } = await supabase
         .from('noise_reports')
         .insert({
@@ -216,7 +203,6 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
       }
 
       if (newReport) {
-        // Create the report with the current user's username
         const formattedReport: NoiseReport = {
           id: newReport.id,
           locationId: newReport.location_id,
@@ -224,13 +210,11 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
           noiseLevel: newReport.noise_level,
           comment: newReport.comment || "",
           timestamp: newReport.timestamp || new Date().toISOString(),
-          username: currentUser.username, // Use the current user's username directly
+          username: currentUser.username,
         };
 
         setReports((prev) => [formattedReport, ...prev]);
 
-        // The trigger in the database will update the location stats,
-        // so we need to fetch the updated location
         const { data: updatedLocation, error: locationError } = await supabase
           .from('locations')
           .select("*")
@@ -250,9 +234,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
               return loc;
             })
           );
-        }
 
-        // Update the user's report count in the local state
         setCurrentUser((prev) => {
           if (prev) {
             return {
@@ -322,7 +304,6 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     }
     
     try {
-      // Insert location to Supabase
       const { data: newLocation, error } = await supabase
         .from('locations')
         .insert({
@@ -346,7 +327,6 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
       }
 
       if (newLocation) {
-        // Update local state
         const formattedLocation: Location = {
           id: newLocation.id,
           name: newLocation.name,
