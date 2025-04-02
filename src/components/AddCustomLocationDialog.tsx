@@ -1,5 +1,5 @@
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -7,7 +7,8 @@ import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { useToast } from "@/components/ui/use-toast";
 import { useApp } from "@/context/AppContext";
-import { Loader2 } from "lucide-react";
+import { Loader2, AlertCircle } from "lucide-react";
+import { Alert, AlertDescription } from "@/components/ui/alert-dialog";
 
 interface AddCustomLocationDialogProps {
   open: boolean;
@@ -24,9 +25,20 @@ const AddCustomLocationDialog: React.FC<AddCustomLocationDialogProps> = ({
   const [address, setAddress] = useState("");
   const [type, setType] = useState<"cafe" | "coworking">("cafe");
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [showPositionWarning, setShowPositionWarning] = useState(false);
   
   const { toast } = useToast();
   const { addLocation } = useApp();
+
+  // Reset form when dialog opens/closes
+  useEffect(() => {
+    if (open) {
+      setName("");
+      setAddress("");
+      setType("cafe");
+      setShowPositionWarning(!position || position.lat === 40.7128); // Show warning if using default position
+    }
+  }, [open, position]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -85,6 +97,15 @@ const AddCustomLocationDialog: React.FC<AddCustomLocationDialogProps> = ({
               <p className="font-mono">Latitude: {position.lat.toFixed(6)}</p>
               <p className="font-mono">Longitude: {position.lng.toFixed(6)}</p>
             </div>
+          )}
+          
+          {showPositionWarning && (
+            <Alert>
+              <AlertCircle className="h-4 w-4" />
+              <AlertDescription>
+                Using default coordinates. For more accuracy, add a location from the map view by clicking on a specific point.
+              </AlertDescription>
+            </Alert>
           )}
           
           <div className="space-y-2">
