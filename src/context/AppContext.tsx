@@ -1,8 +1,8 @@
+
 import React, { createContext, useContext, useState, ReactNode, useEffect } from "react";
 import { Location, NoiseReport, User } from "../types";
 import { useToast } from "@/components/ui/use-toast";
 import { supabase } from "@/integrations/supabase/client";
-import { PostgrestError } from "@supabase/supabase-js";
 
 interface AppContextType {
   locations: Location[];
@@ -78,16 +78,13 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     }
   };
 
-  // Fetch noise reports from Supabase
+  // Fetch noise reports from Supabase - FIXED
   const fetchReports = async () => {
     try {
+      // Change the query to fetch profiles separately
       const { data, error } = await supabase
         .from('noise_reports')
-        .select(`
-          *,
-          profiles:user_id (username)
-        `)
-        .order("timestamp", { ascending: false });
+        .select("*");
 
       if (error) {
         console.error("Error fetching reports:", error);
@@ -95,15 +92,27 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
       }
 
       if (data) {
-        const formattedReports: NoiseReport[] = data.map((report) => ({
-          id: report.id,
-          locationId: report.location_id,
-          userId: report.user_id,
-          noiseLevel: report.noise_level,
-          comment: report.comment || "",
-          timestamp: report.timestamp || new Date().toISOString(),
-          username: report.profiles?.username || "Anonymous",
-        }));
+        // For each report, fetch the associated username
+        const formattedReports: NoiseReport[] = await Promise.all(
+          data.map(async (report) => {
+            // Get username from profiles table
+            const { data: profileData } = await supabase
+              .from('profiles')
+              .select('username')
+              .eq('id', report.user_id)
+              .single();
+
+            return {
+              id: report.id,
+              locationId: report.location_id,
+              userId: report.user_id,
+              noiseLevel: report.noise_level,
+              comment: report.comment || "",
+              timestamp: report.timestamp || new Date().toISOString(),
+              username: profileData?.username || "Anonymous",
+            };
+          })
+        );
 
         setReports(formattedReports);
       }
@@ -194,10 +203,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
           noise_level: reportData.noiseLevel,
           comment: reportData.comment,
         })
-        .select(`
-          *,
-          profiles:user_id (username)
-        `)
+        .select()
         .single();
 
       if (error) {
@@ -210,7 +216,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
       }
 
       if (newReport) {
-        // Update local state
+        // Create the report with the current user's username
         const formattedReport: NoiseReport = {
           id: newReport.id,
           locationId: newReport.location_id,
@@ -218,7 +224,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
           noiseLevel: newReport.noise_level,
           comment: newReport.comment || "",
           timestamp: newReport.timestamp || new Date().toISOString(),
-          username: newReport.profiles?.username || currentUser.username,
+          username: currentUser.username, // Use the current user's username directly
         };
 
         setReports((prev) => [formattedReport, ...prev]);
