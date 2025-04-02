@@ -40,20 +40,20 @@ const Layout: React.FC<LayoutProps> = ({
   };
 
   return (
-    <div className="flex flex-col h-screen">
+    <div className="flex flex-col h-screen bg-gradient-to-b from-[#1A1F2C] to-[#403E43] text-white">
       {/* Header */}
-      <header className="bg-white border-b sticky top-0 z-10">
+      <header className="bg-[#222831] border-b border-[#2A2E3A] sticky top-0 z-10">
         <div className="container mx-auto px-4 py-4 flex justify-between items-center">
           <div className="flex items-center gap-2">
             <VolumeX className="h-6 w-6 text-primary" />
-            <h1 className="text-xl font-semibold">QuietSpotter</h1>
+            <h1 className="text-xl font-semibold text-white">QuietSpotter</h1>
           </div>
           
           <div className="flex items-center gap-2">
             <Button
               variant="ghost"
               size="sm"
-              className={`${currentView === 'map' ? 'bg-secondary' : ''}`}
+              className={`text-gray-300 hover:text-white ${currentView === 'map' ? 'bg-[#2A2E3A]' : ''}`}
               onClick={() => setCurrentView("map")}
             >
               <Map className="h-5 w-5 mr-1" />
@@ -62,7 +62,7 @@ const Layout: React.FC<LayoutProps> = ({
             <Button
               variant="ghost"
               size="sm"
-              className={`${currentView === 'list' ? 'bg-secondary' : ''}`}
+              className={`text-gray-300 hover:text-white ${currentView === 'list' ? 'bg-[#2A2E3A]' : ''}`}
               onClick={() => setCurrentView("list")}
             >
               <Volume2 className="h-5 w-5 mr-1" />
@@ -73,7 +73,7 @@ const Layout: React.FC<LayoutProps> = ({
               {currentUser ? (
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
-                    <Button variant="ghost" size="sm" className="relative">
+                    <Button variant="ghost" size="sm" className="relative hover:bg-[#2A2E3A]">
                       <Avatar className="h-8 w-8">
                         <AvatarFallback className="bg-primary text-white">
                           {currentUser.username.substring(0, 2).toUpperCase()}
@@ -81,31 +81,31 @@ const Layout: React.FC<LayoutProps> = ({
                       </Avatar>
                     </Button>
                   </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end">
+                  <DropdownMenuContent align="end" className="bg-[#222831] border-[#2A2E3A] text-white">
                     <div className="px-2 py-1.5 text-sm font-medium">
                       {currentUser.username}
                     </div>
                     
-                    <DropdownMenuItem onClick={handleAddLocation}>
+                    <DropdownMenuItem onClick={handleAddLocation} className="hover:bg-[#2A2E3A] focus:bg-[#2A2E3A]">
                       <Plus className="h-4 w-4 mr-2" />
                       Add Location
                     </DropdownMenuItem>
                     
-                    <DropdownMenuItem onClick={() => toast({ title: "Reports", description: `You've submitted ${currentUser.reports} reports` })}>
+                    <DropdownMenuItem onClick={() => toast({ title: "Reports", description: `You've submitted ${currentUser.reports} reports` })} className="hover:bg-[#2A2E3A] focus:bg-[#2A2E3A]">
                       <User className="h-4 w-4 mr-2" />
                       My Reports ({currentUser.reports})
                     </DropdownMenuItem>
                     
-                    <DropdownMenuSeparator />
+                    <DropdownMenuSeparator className="bg-[#2A2E3A]" />
                     
-                    <DropdownMenuItem onClick={logout} className="text-red-500 focus:text-red-500">
+                    <DropdownMenuItem onClick={logout} className="text-red-400 hover:text-red-300 hover:bg-[#2A2E3A] focus:bg-[#2A2E3A]">
                       <LogOut className="h-4 w-4 mr-2" />
                       Log Out
                     </DropdownMenuItem>
                   </DropdownMenuContent>
                 </DropdownMenu>
               ) : (
-                <Button size="sm" onClick={handleOpenLogin}>
+                <Button size="sm" className="bg-primary hover:bg-primary/90" onClick={handleOpenLogin}>
                   Log In
                 </Button>
               )}

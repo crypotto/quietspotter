@@ -32,7 +32,7 @@ const LocationList: React.FC = () => {
   return (
     <div className="container mx-auto px-4 py-6">
       <div className="flex justify-between items-center mb-6">
-        <h2 className="text-xl font-semibold">Locations</h2>
+        <h2 className="text-xl font-semibold text-white">Locations</h2>
         
         <div className="flex gap-3 items-center">
           <Select
@@ -41,20 +41,20 @@ const LocationList: React.FC = () => {
               setFilterNoiseLevel(value === "all" ? null : parseInt(value, 10));
             }}
           >
-            <SelectTrigger className="w-[180px]">
+            <SelectTrigger className="w-[180px] bg-[#222831] border-[#2A2E3A] text-gray-300">
               <SelectValue placeholder="Filter by noise" />
             </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">All noise levels</SelectItem>
-              <SelectItem value="3">Quiet only</SelectItem>
-              <SelectItem value="6">Moderate or less</SelectItem>
+            <SelectContent className="bg-[#222831] border-[#2A2E3A] text-white">
+              <SelectItem value="all" className="focus:bg-[#2A2E3A] focus:text-white">All noise levels</SelectItem>
+              <SelectItem value="3" className="focus:bg-[#2A2E3A] focus:text-white">Quiet only</SelectItem>
+              <SelectItem value="6" className="focus:bg-[#2A2E3A] focus:text-white">Moderate or less</SelectItem>
             </SelectContent>
           </Select>
 
           <Button
             onClick={handleAddCustomLocation}
             size="sm"
-            className="whitespace-nowrap"
+            className="whitespace-nowrap bg-[#2A2E3A] hover:bg-[#3A3F4A] text-white border border-[#2A2E3A]"
           >
             <Plus className="mr-2 h-4 w-4" />
             Add Custom Location
@@ -74,8 +74,8 @@ const LocationList: React.FC = () => {
         </div>
       ) : (
         <div className="text-center py-10">
-          <p className="text-lg text-muted-foreground">No locations match your filters.</p>
-          <p className="text-sm mt-2">Try adjusting your filter criteria.</p>
+          <p className="text-lg text-gray-300">No locations match your filters.</p>
+          <p className="text-sm mt-2 text-gray-400">Try adjusting your filter criteria.</p>
         </div>
       )}
 

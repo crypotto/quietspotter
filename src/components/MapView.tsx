@@ -76,10 +76,10 @@ const MapView: React.FC = () => {
 
   if (loadError) {
     return (
-      <div className="h-full flex items-center justify-center">
+      <div className="h-full flex items-center justify-center bg-[#1A1F2C]">
         <div className="text-center">
-          <p className="text-lg font-medium">Error loading maps</p>
-          <p className="text-sm text-muted-foreground">{loadError.message}</p>
+          <p className="text-lg font-medium text-white">Error loading maps</p>
+          <p className="text-sm text-gray-400">{loadError.message}</p>
         </div>
       </div>
     );
@@ -90,9 +90,9 @@ const MapView: React.FC = () => {
       {/* Map container */}
       <div className="h-full">
         {!isLoaded ? (
-          <div className="absolute inset-0 flex items-center justify-center bg-background/80">
+          <div className="absolute inset-0 flex items-center justify-center bg-[#1A1F2C]/80">
             <Loader2 className="h-8 w-8 animate-spin text-primary" />
-            <span className="ml-2">Loading map...</span>
+            <span className="ml-2 text-white">Loading map...</span>
           </div>
         ) : (
           <GoogleMap
@@ -105,6 +105,23 @@ const MapView: React.FC = () => {
               streetViewControl: false,
               mapTypeControl: false,
               fullscreenControl: false,
+              styles: [
+                {
+                  featureType: "all",
+                  elementType: "all",
+                  stylers: [{ saturation: -100 }, { lightness: -20 }]
+                },
+                {
+                  featureType: "water",
+                  elementType: "all",
+                  stylers: [{ color: "#182236" }]
+                },
+                {
+                  featureType: "road",
+                  elementType: "all",
+                  stylers: [{ color: "#2A2E3A" }]
+                }
+              ]
             }}
           >
             {/* Location markers */}
@@ -123,7 +140,7 @@ const MapView: React.FC = () => {
       <div className="absolute left-4 top-4 z-10">
         <Popover open={filterOpen} onOpenChange={setFilterOpen}>
           <PopoverTrigger asChild>
-            <Button variant="outline" className="bg-white shadow-sm">
+            <Button variant="outline" className="bg-[#222831] border-[#2A2E3A] text-white hover:bg-[#2A2E3A]">
               {filterNoiseLevel !== null ? (
                 <span>Noise ≤ {filterNoiseLevel}/10</span>
               ) : (
@@ -131,7 +148,7 @@ const MapView: React.FC = () => {
               )}
             </Button>
           </PopoverTrigger>
-          <PopoverContent className="w-80">
+          <PopoverContent className="w-80 bg-[#222831] border-[#2A2E3A] text-white">
             <div className="space-y-4">
               <h4 className="font-medium">Maximum Noise Level</h4>
               {tempFilterValue !== null ? (
@@ -140,13 +157,13 @@ const MapView: React.FC = () => {
                   onChange={setTempFilterValue}
                 />
               ) : (
-                <p className="text-sm text-muted-foreground">No filter applied</p>
+                <p className="text-sm text-gray-400">No filter applied</p>
               )}
               <div className="flex justify-between">
-                <Button variant="outline" size="sm" onClick={resetFilter}>
+                <Button variant="outline" size="sm" onClick={resetFilter} className="border-[#2A2E3A] hover:bg-[#2A2E3A]">
                   Reset
                 </Button>
-                <Button size="sm" onClick={applyFilter}>
+                <Button size="sm" onClick={applyFilter} className="bg-primary hover:bg-primary/90">
                   Apply Filter
                 </Button>
               </div>
@@ -159,7 +176,7 @@ const MapView: React.FC = () => {
       <div className="absolute right-4 top-4 z-10 flex flex-col gap-2">
         <Button 
           onClick={() => setAddLocationOpen(true)}
-          className="bg-white text-primary hover:bg-primary hover:text-white"
+          className="bg-[#222831] text-primary hover:bg-[#2A2E3A] border border-[#2A2E3A]"
           variant="outline"
         >
           <MapPin className="mr-2 h-4 w-4" />
@@ -167,7 +184,7 @@ const MapView: React.FC = () => {
         </Button>
         <Button 
           variant="secondary"
-          className="bg-white text-primary hover:bg-primary hover:text-white"
+          className="bg-[#222831] text-primary hover:bg-[#2A2E3A] border border-[#2A2E3A]"
           onClick={() => {
             if (mapRef.current) {
               const center = mapRef.current.getCenter();
@@ -187,9 +204,9 @@ const MapView: React.FC = () => {
       </div>
       
       {/* Info box */}
-      <div className="absolute right-4 bottom-4 bg-white p-3 rounded-lg shadow-md text-sm max-w-xs">
-        <p className="font-medium mb-1">Map View</p>
-        <p className="text-muted-foreground text-xs">
+      <div className="absolute right-4 bottom-4 bg-[#222831]/90 border border-[#2A2E3A] p-3 rounded-lg shadow-md text-sm max-w-xs">
+        <p className="font-medium mb-1 text-white">Map View</p>
+        <p className="text-gray-400 text-xs">
           Showing {filteredLocations.length} locations. 
           Click on a marker to see details or click anywhere on the map to add a custom location.
         </p>
