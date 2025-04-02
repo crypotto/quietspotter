@@ -1,3 +1,4 @@
+
 import React, { createContext, useContext, useState, ReactNode, useEffect } from "react";
 import { Location, NoiseReport, User } from "../types";
 import { useToast } from "@/components/ui/use-toast";
@@ -235,15 +236,16 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
             })
           );
 
-        setCurrentUser((prev) => {
-          if (prev) {
-            return {
-              ...prev,
-              reports: prev.reports + 1,
-            };
-          }
-          return prev;
-        });
+          setCurrentUser((prev) => {
+            if (prev) {
+              return {
+                ...prev,
+                reports: prev.reports + 1,
+              };
+            }
+            return prev;
+          });
+        }
 
         toast({
           title: "Report submitted",
