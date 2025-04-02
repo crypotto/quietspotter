@@ -2,32 +2,42 @@
 import React, { useState, useRef, useEffect } from "react";
 import { useApp } from "@/context/AppContext";
 import { Location, getNoiseLevelFromNumber } from "@/types";
-import { MapPin, Loader2 } from "lucide-react";
+import { Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import NoiseSlider from "./NoiseSlider";
+import { useLoadScript, GoogleMap, MarkerF } from "@react-google-maps/api";
 
-// Since we don't have a real map integration in this demo, we'll make a simulated map view
+const mapContainerStyle = {
+  width: "100%",
+  height: "100%",
+};
+
+const defaultCenter = {
+  lat: 40.7128,
+  lng: -74.0060, // Default to New York City
+};
+
 const MapView: React.FC = () => {
   const { locations, setSelectedLocation, filterNoiseLevel, setFilterNoiseLevel } = useApp();
-  const [isLoading, setIsLoading] = useState(true);
   const [filterOpen, setFilterOpen] = useState(false);
   const [tempFilterValue, setTempFilterValue] = useState<number | null>(filterNoiseLevel || 10);
-  const mapRef = useRef<HTMLDivElement>(null);
+  const mapRef = useRef<google.maps.Map | null>(null);
   
   // Filter locations based on noise level
   const filteredLocations = filterNoiseLevel !== null
     ? locations.filter(loc => loc.averageNoiseLevel <= filterNoiseLevel)
     : locations;
   
-  // Simulate map loading
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      setIsLoading(false);
-    }, 1000);
-    
-    return () => clearTimeout(timer);
-  }, []);
+  // Load Google Maps API
+  const { isLoaded, loadError } = useLoadScript({
+    googleMapsApiKey: "AIzaSyASsYyj0B3NvD4B7GIhsWaNQvAas7Y1GVc", // This is a public API key, it's okay to include directly
+    libraries: ["places"],
+  });
+  
+  const onMapLoad = (map: google.maps.Map) => {
+    mapRef.current = map;
+  };
   
   // Apply filter
   const applyFilter = () => {
@@ -42,34 +52,47 @@ const MapView: React.FC = () => {
     setFilterOpen(false);
   };
 
+  if (loadError) {
+    return (
+      <div className="h-full flex items-center justify-center">
+        <div className="text-center">
+          <p className="text-lg font-medium">Error loading maps</p>
+          <p className="text-sm text-muted-foreground">Please try again later</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="relative h-full">
       {/* Map container */}
-      <div 
-        ref={mapRef}
-        className="h-full bg-[#f8f9fa] relative overflow-hidden"
-        style={{
-          backgroundImage: "url('https://api.mapbox.com/styles/v1/mapbox/light-v10/static/-74.006,40.7128,12,0/1200x800?access_token=pk.placeholder')",
-          backgroundSize: "cover",
-          backgroundPosition: "center"
-        }}
-      >
-        {isLoading ? (
+      <div className="h-full">
+        {!isLoaded ? (
           <div className="absolute inset-0 flex items-center justify-center bg-background/80">
             <Loader2 className="h-8 w-8 animate-spin text-primary" />
             <span className="ml-2">Loading map...</span>
           </div>
         ) : (
-          <>
-            {/* Pins on the map */}
+          <GoogleMap
+            mapContainerStyle={mapContainerStyle}
+            center={defaultCenter}
+            zoom={12}
+            onLoad={onMapLoad}
+            options={{
+              streetViewControl: false,
+              mapTypeControl: false,
+              fullscreenControl: false,
+            }}
+          >
+            {/* Location markers */}
             {filteredLocations.map(location => (
-              <LocationPin 
+              <LocationMarker 
                 key={location.id}
                 location={location}
                 onClick={() => setSelectedLocation(location)}
               />
             ))}
-          </>
+          </GoogleMap>
         )}
       </div>
       
@@ -113,38 +136,44 @@ const MapView: React.FC = () => {
       <div className="absolute right-4 bottom-4 bg-white p-3 rounded-lg shadow-md text-sm max-w-xs">
         <p className="font-medium mb-1">Map View</p>
         <p className="text-muted-foreground text-xs">
-          This is a simulated map view for demonstration purposes. In a real app, 
-          this would be an interactive map using Mapbox or Google Maps.
+          Showing {filteredLocations.length} locations. 
+          Click on a marker to see details.
         </p>
       </div>
     </div>
   );
 };
 
-interface LocationPinProps {
+interface LocationMarkerProps {
   location: Location;
   onClick: () => void;
 }
 
-const LocationPin: React.FC<LocationPinProps> = ({ location, onClick }) => {
+const LocationMarker: React.FC<LocationMarkerProps> = ({ location, onClick }) => {
   const noiseLevel = getNoiseLevelFromNumber(location.averageNoiseLevel);
   
-  // Randomize position a bit to simulate map placement
-  const left = `${25 + Math.random() * 50}%`;
-  const top = `${15 + Math.random() * 60}%`;
+  let markerIcon: google.maps.Symbol = {
+    path: google.maps.SymbolPath.CIRCLE,
+    fillColor: "#10b981", // quiet - green
+    fillOpacity: 1,
+    strokeWeight: 2,
+    strokeColor: "#ffffff",
+    scale: 10,
+  };
   
-  let pinColor = "bg-noise-quiet";
-  if (noiseLevel === "moderate") pinColor = "bg-noise-moderate";
-  if (noiseLevel === "noisy") pinColor = "bg-noise-noisy";
+  if (noiseLevel === "moderate") {
+    markerIcon.fillColor = "#f59e0b"; // moderate - amber
+  } else if (noiseLevel === "noisy") {
+    markerIcon.fillColor = "#ef4444"; // noisy - red
+  }
   
   return (
-    <button
-      className={`absolute ${pinColor} text-white rounded-full p-2 hover:scale-110 transition-transform shadow-md z-10`}
-      style={{ left, top }}
+    <MarkerF
+      position={{ lat: location.lat, lng: location.lng }}
       onClick={onClick}
-    >
-      <MapPin className="h-5 w-5" />
-    </button>
+      icon={markerIcon}
+      title={location.name}
+    />
   );
 };
 

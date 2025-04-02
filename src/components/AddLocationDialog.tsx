@@ -1,5 +1,5 @@
 
-import React, { useState } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -7,6 +7,8 @@ import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { useToast } from "@/components/ui/use-toast";
 import { useApp } from "@/context/AppContext";
+import { useLoadScript } from "@react-google-maps/api";
+import { Loader2 } from "lucide-react";
 
 interface AddLocationDialogProps {
   open: boolean;
@@ -17,34 +19,81 @@ const AddLocationDialog: React.FC<AddLocationDialogProps> = ({ open, onOpenChang
   const [name, setName] = useState("");
   const [address, setAddress] = useState("");
   const [type, setType] = useState<"cafe" | "coworking">("cafe");
-  const [lat, setLat] = useState<number | string>("");
-  const [lng, setLng] = useState<number | string>("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [selectedPlace, setSelectedPlace] = useState<google.maps.places.PlaceResult | null>(null);
+  
+  const autocompleteRef = useRef<google.maps.places.Autocomplete | null>(null);
+  const inputRef = useRef<HTMLInputElement | null>(null);
   
   const { toast } = useToast();
   const { addLocation } = useApp();
 
+  // Load Google Maps Places API
+  const { isLoaded, loadError } = useLoadScript({
+    googleMapsApiKey: "AIzaSyASsYyj0B3NvD4B7GIhsWaNQvAas7Y1GVc",
+    libraries: ["places"],
+  });
+
+  // Initialize autocomplete when component mounts
+  useEffect(() => {
+    if (!isLoaded || !inputRef.current) return;
+
+    // Initialize Google Maps Places Autocomplete
+    autocompleteRef.current = new google.maps.places.Autocomplete(inputRef.current, {
+      fields: ["name", "formatted_address", "geometry"],
+      types: ["establishment"],
+    });
+
+    // Add listener for place selection
+    autocompleteRef.current.addListener("place_changed", () => {
+      if (!autocompleteRef.current) return;
+      
+      const place = autocompleteRef.current.getPlace();
+      if (!place.geometry || !place.geometry.location) {
+        toast({
+          title: "Invalid location",
+          description: "Please select a location from the dropdown list",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      setSelectedPlace(place);
+      setName(place.name || "");
+      setAddress(place.formatted_address || "");
+    });
+
+    return () => {
+      // Clean up
+      if (autocompleteRef.current) {
+        google.maps.event.clearInstanceListeners(autocompleteRef.current);
+      }
+    };
+  }, [isLoaded, toast]);
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     
-    // Validate coordinates
-    const latNum = Number(lat);
-    const lngNum = Number(lng);
-    
-    if (isNaN(latNum) || isNaN(lngNum)) {
+    if (!selectedPlace || !selectedPlace.geometry?.location) {
       toast({
-        title: "Invalid coordinates",
-        description: "Please enter valid latitude and longitude values.",
+        title: "Invalid location",
+        description: "Please select a location from the dropdown list",
         variant: "destructive",
       });
       return;
     }
 
+    setIsSubmitting(true);
+    
     // Add the new location
+    const lat = selectedPlace.geometry.location.lat();
+    const lng = selectedPlace.geometry.location.lng();
+    
     addLocation({
       name: name.trim(),
       address: address.trim(),
-      lat: latNum,
-      lng: lngNum,
+      lat,
+      lng,
       type: type,
     });
     
@@ -52,8 +101,8 @@ const AddLocationDialog: React.FC<AddLocationDialogProps> = ({ open, onOpenChang
     setName("");
     setAddress("");
     setType("cafe");
-    setLat("");
-    setLng("");
+    setSelectedPlace(null);
+    setIsSubmitting(false);
     onOpenChange(false);
   };
 
@@ -66,78 +115,86 @@ const AddLocationDialog: React.FC<AddLocationDialogProps> = ({ open, onOpenChang
             Share a cafe or coworking space with the community.
           </DialogDescription>
         </DialogHeader>
-        <form onSubmit={handleSubmit} className="space-y-4 py-4">
-          <div className="space-y-2">
-            <Label htmlFor="name">Location Name</Label>
-            <Input
-              id="name"
-              placeholder="Coffee House, Coworking Hub, etc."
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              required
-            />
+        
+        {!isLoaded ? (
+          <div className="py-8 flex items-center justify-center">
+            <Loader2 className="h-8 w-8 animate-spin text-primary" />
+            <span className="ml-2">Loading...</span>
           </div>
-          
-          <div className="space-y-2">
-            <Label htmlFor="address">Address</Label>
-            <Input
-              id="address"
-              placeholder="123 Main St, City, Country"
-              value={address}
-              onChange={(e) => setAddress(e.target.value)}
-              required
-            />
-          </div>
-          
-          <div className="grid grid-cols-2 gap-4">
+        ) : (
+          <form onSubmit={handleSubmit} className="space-y-4 py-4">
             <div className="space-y-2">
-              <Label htmlFor="latitude">Latitude</Label>
+              <Label htmlFor="location-search">Search for a location</Label>
               <Input
-                id="latitude"
-                type="number"
-                step="any"
-                placeholder="e.g. 51.5074"
-                value={lat}
-                onChange={(e) => setLat(e.target.value)}
-                required
+                id="location-search"
+                ref={inputRef}
+                placeholder="Type to search cafes or coworking spaces"
+                className="w-full"
+                autoComplete="off"
               />
+              <p className="text-xs text-muted-foreground">
+                Select a location from the dropdown suggestions
+              </p>
             </div>
-            <div className="space-y-2">
-              <Label htmlFor="longitude">Longitude</Label>
-              <Input
-                id="longitude"
-                type="number"
-                step="any"
-                placeholder="e.g. -0.1278"
-                value={lng}
-                onChange={(e) => setLng(e.target.value)}
-                required
-              />
-            </div>
-          </div>
-          
-          <div className="space-y-2">
-            <Label>Type</Label>
-            <RadioGroup 
-              value={type} 
-              onValueChange={(value) => setType(value as "cafe" | "coworking")}
-              className="flex space-x-4"
+            
+            {selectedPlace && (
+              <>
+                <div className="space-y-2">
+                  <Label htmlFor="name">Location Name</Label>
+                  <Input
+                    id="name"
+                    value={name}
+                    onChange={(e) => setName(e.target.value)}
+                    required
+                  />
+                </div>
+                
+                <div className="space-y-2">
+                  <Label htmlFor="address">Address</Label>
+                  <Input
+                    id="address"
+                    value={address}
+                    onChange={(e) => setAddress(e.target.value)}
+                    required
+                  />
+                </div>
+                
+                <div className="space-y-2">
+                  <Label>Type</Label>
+                  <RadioGroup 
+                    value={type} 
+                    onValueChange={(value) => setType(value as "cafe" | "coworking")}
+                    className="flex space-x-4"
+                  >
+                    <div className="flex items-center space-x-2">
+                      <RadioGroupItem value="cafe" id="cafe" />
+                      <Label htmlFor="cafe">Café</Label>
+                    </div>
+                    <div className="flex items-center space-x-2">
+                      <RadioGroupItem value="coworking" id="coworking" />
+                      <Label htmlFor="coworking">Coworking Space</Label>
+                    </div>
+                  </RadioGroup>
+                </div>
+              </>
+            )}
+            
+            <Button 
+              type="submit" 
+              className="w-full" 
+              disabled={!selectedPlace || isSubmitting}
             >
-              <div className="flex items-center space-x-2">
-                <RadioGroupItem value="cafe" id="cafe" />
-                <Label htmlFor="cafe">Café</Label>
-              </div>
-              <div className="flex items-center space-x-2">
-                <RadioGroupItem value="coworking" id="coworking" />
-                <Label htmlFor="coworking">Coworking Space</Label>
-              </div>
-            </RadioGroup>
-          </div>
-          
-          <Button type="submit" className="w-full" disabled={!name.trim() || !address.trim() || !lat || !lng}>
-            Add Location
-          </Button>
-        </form>
+              {isSubmitting ? (
+                <span className="flex items-center">
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Adding...
+                </span>
+              ) : (
+                "Add Location"
+              )}
+            </Button>
+          </form>
+        )}
       </DialogContent>
     </Dialog>
   );
