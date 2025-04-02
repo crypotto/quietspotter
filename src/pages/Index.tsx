@@ -9,11 +9,12 @@ import LoginDialog from "@/components/LoginDialog";
 import AddLocationDialog from "@/components/AddLocationDialog";
 import { useApp } from "@/context/AppContext";
 
+// Move this component inside the AppProvider
 const IndexContent: React.FC = () => {
   const [loginDialogOpen, setLoginDialogOpen] = useState(false);
   const [locationDetailOpen, setLocationDetailOpen] = useState(false);
   const [addLocationOpen, setAddLocationOpen] = useState(false);
-  const { currentView, selectedLocation, currentUser } = useApp();
+  const { currentView, selectedLocation } = useApp();
 
   // When a location is selected, open the detail dialog
   useEffect(() => {
@@ -54,6 +55,7 @@ const IndexContent: React.FC = () => {
   );
 };
 
+// This is the component that gets exported and rendered
 const Index: React.FC = () => {
   return (
     <AppProvider>

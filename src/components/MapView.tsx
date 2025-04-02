@@ -1,5 +1,5 @@
 
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState, useRef } from "react";
 import { useApp } from "@/context/AppContext";
 import { Location, getNoiseLevelFromNumber } from "@/types";
 import { Loader2 } from "lucide-react";
@@ -21,6 +21,10 @@ const defaultCenter = {
   lng: -74.0060, // Default to New York City
 };
 
+// Use a valid Google Maps API key or use process.env variable
+// For the demo, we'll use a placeholder - you should replace this with a valid key
+const GOOGLE_MAPS_API_KEY = "YOUR_GOOGLE_MAPS_API_KEY";
+
 const MapView: React.FC = () => {
   const { locations, setSelectedLocation, filterNoiseLevel, setFilterNoiseLevel } = useApp();
   const [filterOpen, setFilterOpen] = useState(false);
@@ -32,11 +36,9 @@ const MapView: React.FC = () => {
     ? locations.filter(loc => loc.averageNoiseLevel <= filterNoiseLevel)
     : locations;
   
-  // Load Google Maps API with a properly configured API key
-  // Note: For security, it's better to use an environment variable,
-  // but for the sake of this demo we're using a direct key that has proper restrictions
+  // Load Google Maps API with API key
   const { isLoaded, loadError } = useLoadScript({
-    googleMapsApiKey: "AIzaSyBZ-FeDbQlKUQRZ1kkRzZ8wULvpxIGsS_o",
+    googleMapsApiKey: GOOGLE_MAPS_API_KEY,
     libraries: libraries as any,
   });
   

@@ -13,6 +13,10 @@ import { Loader2 } from "lucide-react";
 // Define libraries outside of the component to avoid reloading
 const libraries = ["places"];
 
+// Use a valid Google Maps API key or use process.env variable
+// For the demo, we'll use a placeholder - you should replace this with a valid key
+const GOOGLE_MAPS_API_KEY = "YOUR_GOOGLE_MAPS_API_KEY";
+
 interface AddLocationDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
@@ -31,9 +35,9 @@ const AddLocationDialog: React.FC<AddLocationDialogProps> = ({ open, onOpenChang
   const { toast } = useToast();
   const { addLocation } = useApp();
 
-  // Load Google Maps Places API with the same key as in MapView
+  // Load Google Maps Places API with the same key
   const { isLoaded, loadError } = useLoadScript({
-    googleMapsApiKey: "AIzaSyBZ-FeDbQlKUQRZ1kkRzZ8wULvpxIGsS_o",
+    googleMapsApiKey: GOOGLE_MAPS_API_KEY,
     libraries: libraries as any,
   });
 
