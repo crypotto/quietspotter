@@ -1,6 +1,6 @@
+
 import React, { createContext, useContext, useState, ReactNode } from "react";
 import { Location, NoiseReport, User } from "../types";
-import { mockLocations, mockReports, mockUsers } from "../data/mockData";
 import { useToast } from "@/components/ui/use-toast";
 
 interface AppContextType {
@@ -31,9 +31,10 @@ export const useApp = () => {
 };
 
 export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
-  const [locations, setLocations] = useState<Location[]>(mockLocations);
-  const [reports, setReports] = useState<NoiseReport[]>(mockReports);
-  const [users, setUsers] = useState<User[]>(mockUsers);
+  // Start with empty arrays instead of mock data
+  const [locations, setLocations] = useState<Location[]>([]);
+  const [reports, setReports] = useState<NoiseReport[]>([]);
+  const [users, setUsers] = useState<User[]>([]);
   const [currentUser, setCurrentUser] = useState<User | null>(null);
   const [selectedLocation, setSelectedLocation] = useState<Location | null>(null);
   const [filterNoiseLevel, setFilterNoiseLevel] = useState<number | null>(null);

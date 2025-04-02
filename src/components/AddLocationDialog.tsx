@@ -10,6 +10,9 @@ import { useApp } from "@/context/AppContext";
 import { useLoadScript } from "@react-google-maps/api";
 import { Loader2 } from "lucide-react";
 
+// Define libraries outside of the component to avoid reloading
+const libraries = ["places"];
+
 interface AddLocationDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
@@ -28,10 +31,10 @@ const AddLocationDialog: React.FC<AddLocationDialogProps> = ({ open, onOpenChang
   const { toast } = useToast();
   const { addLocation } = useApp();
 
-  // Load Google Maps Places API
+  // Load Google Maps Places API with the same key as in MapView
   const { isLoaded, loadError } = useLoadScript({
-    googleMapsApiKey: "AIzaSyASsYyj0B3NvD4B7GIhsWaNQvAas7Y1GVc",
-    libraries: ["places"],
+    googleMapsApiKey: "AIzaSyBZ-FeDbQlKUQRZ1kkRzZ8wULvpxIGsS_o",
+    libraries: libraries as any,
   });
 
   // Initialize autocomplete when component mounts

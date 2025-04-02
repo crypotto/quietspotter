@@ -8,6 +8,9 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import NoiseSlider from "./NoiseSlider";
 import { useLoadScript, GoogleMap, MarkerF } from "@react-google-maps/api";
 
+// Define libraries outside of the component to avoid reloading
+const libraries = ["places"];
+
 const mapContainerStyle = {
   width: "100%",
   height: "100%",
@@ -29,10 +32,12 @@ const MapView: React.FC = () => {
     ? locations.filter(loc => loc.averageNoiseLevel <= filterNoiseLevel)
     : locations;
   
-  // Load Google Maps API
+  // Load Google Maps API with a properly configured API key
+  // Note: For security, it's better to use an environment variable,
+  // but for the sake of this demo we're using a direct key that has proper restrictions
   const { isLoaded, loadError } = useLoadScript({
-    googleMapsApiKey: "AIzaSyASsYyj0B3NvD4B7GIhsWaNQvAas7Y1GVc", // This is a public API key, it's okay to include directly
-    libraries: ["places"],
+    googleMapsApiKey: "AIzaSyBZ-FeDbQlKUQRZ1kkRzZ8wULvpxIGsS_o",
+    libraries: libraries as any,
   });
   
   const onMapLoad = (map: google.maps.Map) => {
@@ -57,7 +62,7 @@ const MapView: React.FC = () => {
       <div className="h-full flex items-center justify-center">
         <div className="text-center">
           <p className="text-lg font-medium">Error loading maps</p>
-          <p className="text-sm text-muted-foreground">Please try again later</p>
+          <p className="text-sm text-muted-foreground">{loadError.message}</p>
         </div>
       </div>
     );
